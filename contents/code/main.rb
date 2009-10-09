@@ -28,16 +28,18 @@ module RubyWidget
       self.background_hints = Plasma::Applet.DefaultBackground
  
       layout = Qt::GraphicsLinearLayout.new Qt::Vertical, self
+
+      # try to load config
       
-       data = Plasma::ToolTipContent.new
-       data.mainText = "My Title"
-       data.subText = "My Title"
+      data = Plasma::ToolTipContent.new
+      data.mainText = "My Title"
+      data.subText = "My Title"
 
       button = Plasma::PushButton.new self
       button.text = "Hi"
 
-      image = Plasma::IconWidget self
-#      image.icon 
+      image = Plasma::IconWidget.new self
+#      image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
 
       @label = Plasma::Label.new self
       @label.text = "Hello world!"
