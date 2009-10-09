@@ -77,17 +77,31 @@ module RubyWidget
 #puts "\n\b@page.methods : "+ @page.methods.sort.join("\n").to_s+"\n\n" 
 #  mousePressEvent
       
-      @labels = parsexml
-      @labels.each do |label_text|
-         @label = Plasma::Label.new self
-         @label.text = label_text
-         layout.add_item @label
-      end
+#--------------------------------------------------
+#       @labels = parsexml
+#       @labels.each do |label_text|
+#          @label = Plasma::Label.new self
+#          @label.text = label_text
+#          layout.add_item @label
+#       end
+# 
+#-------------------------------------------------- 
       #@label.text = titles[2]
+      parsexml
+
+#      neco = KIO::storedGet(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"), KIO::Reload, KIO::HideProgressInfo)
+
+#       image = Plasma::IconWidget.new self
+#       image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
+
+       KIO::NetAccess::download((KDE::Url.new("http://www.google.ca/index.html")), tmpx)
+
+#      obr = Net::HTTP.get_response(URI.parse('http://www.sigut.net/fotky/obr1500.jpg')).body
+ #     image.setIcon(obr)
+      
 
 #      $LOG = Logger.new('log_file.log', 'monthly')
 #      debug(titles)
-#      $LOG.error @titles
 
       
       #@label.text = @titles[@i]
@@ -116,8 +130,13 @@ module RubyWidget
       doc = REXML::Document.new(xml_data)
       labels = []
       links = []
-      doc.elements.each('Document/label') do |ele|
-         labels << ele.text
+      doc.elements.each("Document/*") do |element|
+        case element.name
+        when "label"
+          @label = Plasma::Label.new self
+          @label.text = element.text
+          layout.add_item @label
+        end
       end
       #@delka =titles.length
 #      doc.elements.each('ResultSet/Result/item') do |ele|
