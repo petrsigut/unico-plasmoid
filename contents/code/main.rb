@@ -36,9 +36,13 @@ module RubyWidget
       button = Plasma::PushButton.new self
       button.text = "Hi"
 
+      image = Plasma::IconWidget self
+#      image.icon 
+
       @label = Plasma::Label.new self
       @label.text = "Hello world!"
       Plasma::ToolTipManager::self().setContent(@label, data)
+
 
 
 # web = Qt::WebView.new()
@@ -71,10 +75,12 @@ module RubyWidget
 #puts "\n\b@page.methods : "+ @page.methods.sort.join("\n").to_s+"\n\n" 
 #  mousePressEvent
       
-      #@titles = parsexml
-      #titles.each do |title|
-      #   @label.text = "#{title}"
-      #end
+      @labels = parsexml
+      @labels.each do |label_text|
+         @label = Plasma::Label.new self
+         @label.text = label_text
+         layout.add_item @label
+      end
       #@label.text = titles[2]
 
 #      $LOG = Logger.new('log_file.log', 'monthly')
@@ -89,7 +95,7 @@ module RubyWidget
 
       layout.add_item button
       
-     layout.add_item web
+      #layout.add_item web
 
       self.layout = layout
  
@@ -98,7 +104,7 @@ module RubyWidget
 
     def parsexml
       # Web search for "madonna"
-      url = 'http://localhost:3000/movies/feed.rss'
+      url = 'http://localhost:3000/pcfilmtydne'
       #url = 'http://api.search.yahoo.com/WebSearchService/V1/webSearch?appid=YahooDemo&query=madonna&results=2'
 
       # get the XML data as a string
@@ -106,12 +112,12 @@ module RubyWidget
 
       # extract event information
       doc = REXML::Document.new(xml_data)
-      titles = []
+      labels = []
       links = []
-      doc.elements.each('rss/channel/item/title') do |ele|
-         titles << ele.text
+      doc.elements.each('Document/label') do |ele|
+         labels << ele.text
       end
-      @delka =titles.length
+      #@delka =titles.length
 #      doc.elements.each('ResultSet/Result/item') do |ele|
 #         links << ele.text
 #      end
@@ -122,7 +128,7 @@ module RubyWidget
 #          print "#{title} => #{links[idx]}\n"
 #       end
 #-------------------------------------------------- 
-      titles
+      labels
 
     end
 
