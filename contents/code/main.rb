@@ -23,7 +23,7 @@ module RubyWidget
     end
  
     def init
-      self.has_configuration_interface = false
+      self.has_configuration_interface = true
       self.aspect_ratio_mode = Plasma::Square
       self.background_hints = Plasma::Applet.DefaultBackground
  
@@ -44,6 +44,9 @@ module RubyWidget
       @label = Plasma::Label.new self
       @label.text = "Hello world!"
       Plasma::ToolTipManager::self().setContent(@label, data)
+
+      cfg = Plasma::Applet::
+#      puts imageUrl
 
 
 
@@ -94,7 +97,7 @@ module RubyWidget
 #       image = Plasma::IconWidget.new self
 #       image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
 
-       KIO::NetAccess::download((KDE::Url.new("http://www.google.ca/index.html")), tmpx)
+       KIO::NetAccess.download((KDE::Url.new("http://www.google.ca/index.html")), QT::String::tmpx)
 
 #      obr = Net::HTTP.get_response(URI.parse('http://www.sigut.net/fotky/obr1500.jpg')).body
  #     image.setIcon(obr)
