@@ -38,14 +38,14 @@ module RubyWidget
       button = Plasma::PushButton.new self
       button.text = "Hi"
 
-      image = Plasma::IconWidget.new self
+#      image = Plasma::IconWidget.new self
 #      image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
 
       @label = Plasma::Label.new self
       @label.text = "Hello world!"
       Plasma::ToolTipManager::self().setContent(@label, data)
 
-      cfg = Plasma::Applet::
+      #cfg = Plasma::Applet::
 #      puts imageUrl
 
 
@@ -97,7 +97,7 @@ module RubyWidget
 #       image = Plasma::IconWidget.new self
 #       image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
 
-       KIO::NetAccess.download((KDE::Url.new("http://www.google.ca/index.html")), QT::String::tmpx)
+       #KIO::NetAccess.download((KDE::Url.new("http://www.google.ca/index.html")), QT::String::tmpx)
 
 #      obr = Net::HTTP.get_response(URI.parse('http://www.sigut.net/fotky/obr1500.jpg')).body
  #     image.setIcon(obr)
@@ -133,12 +133,20 @@ module RubyWidget
       doc = REXML::Document.new(xml_data)
       labels = []
       links = []
-      doc.elements.each("Document/*") do |element|
+      doc.elements.each("document/*") do |element|
         case element.name
         when "label"
           @label = Plasma::Label.new self
           @label.text = element.text
           layout.add_item @label
+        when "image"
+          #@image = Plasma::Image.new self
+          @image = Plasma::WebView.new()
+          @image.setUrl(KDE::Url.new(element.text))
+
+   #       @image = Plasma::IconWidget.new self
+#          @image.url = element.text
+          layout.add_item @image
         end
       end
       #@delka =titles.length
