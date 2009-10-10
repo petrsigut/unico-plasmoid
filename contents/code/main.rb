@@ -15,7 +15,8 @@ module RubyWidget
   class Main < PlasmaScripting::Applet
 # The both slots used by our applet.
     slots 'load(QUrl)',
-          'loadFinished(bool)'
+          'loadFinished(bool)',
+          :paserxml
 #    slots :add_x
 
     def initialize parent
@@ -38,77 +39,13 @@ module RubyWidget
       button = Plasma::PushButton.new self
       button.text = "Hi"
 
-#      image = Plasma::IconWidget.new self
-#      image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
-
-      @label = Plasma::Label.new self
-      @label.text = "Hello world!"
-      Plasma::ToolTipManager::self().setContent(@label, data)
-
-      #cfg = Plasma::Applet::
-#      puts imageUrl
-
-
-
-# web = Qt::WebView.new()
-# web.load(Qt::Url.new("http://www.google.com"))
-
-#       @page = Plasma::WebView.new()
-#@page.setUrl(KDE::Url.new("http://dot.kde.org/"))
-#       url = KDE::Url.new 'http://localhost/~phax/sigut//'
-#       web = Plasma::WebView.new
-#       web.url = url
-
-#       @page.page = Qt::WebPage.new(@page)
-#       @page.page.linkDelegationPolicy = Qt::WebPage::DelegateAllLinks
-#       @page.page.settings.setAttribute(
-#        Qt::WebSettings::LinksIncludedInFocusChain, true)
-
-      # Connect signals the webbrowser provides with own functions.
-#      connect(@page, SIGNAL('loadFinished(bool)'),
-#              self, SLOT('loadFinished(bool)'))
-#      connect(@page.page, SIGNAL('linkClicked(QUrl)'),
-#              self, SLOT('load(QUrl)'))
-
-#   @page.load(Qt::Url.new("http://www.google.com"))
-
-
-
-#      @page.setUrl("fddsfadf") 
-#       puts Plasma.instance_methods
-#puts "\n\button.methods : "+ button.methods.sort.join("\n").to_s+"\n\n" 
-#puts "\n\b@page.methods : "+ @page.methods.sort.join("\n").to_s+"\n\n" 
-#  mousePressEvent
-      
-#--------------------------------------------------
-#       @labels = parsexml
-#       @labels.each do |label_text|
-#          @label = Plasma::Label.new self
-#          @label.text = label_text
-#          layout.add_item @label
-#       end
-# 
-#-------------------------------------------------- 
       #@label.text = titles[2]
       parsexml
 
-#      neco = KIO::storedGet(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"), KIO::Reload, KIO::HideProgressInfo)
+      read_config
+      puts @mensa
 
-#       image = Plasma::IconWidget.new self
-#       image.setIcon(KDE::Url.new("http://www.sigut.net/fotky/obr1500.jpg"))
-
-       #KIO::NetAccess.download((KDE::Url.new("http://www.google.ca/index.html")), QT::String::tmpx)
-
-#      obr = Net::HTTP.get_response(URI.parse('http://www.sigut.net/fotky/obr1500.jpg')).body
- #     image.setIcon(obr)
-      
-
-#      $LOG = Logger.new('log_file.log', 'monthly')
-#      debug(titles)
-
-      
-      #@label.text = @titles[@i]
-  
+ 
       
       layout.add_item @label
 
@@ -120,6 +57,19 @@ module RubyWidget
  
       resize 125, 125
     end
+
+    def read_config
+      config = self.config
+      configGroup = config.group('Happa')
+      @mensa = configGroup.readEntry('Mensa','true')
+      puts @mensa
+    end
+
+    def configChanged
+      puts "xxx"
+      readxml
+    end
+
 
     def parsexml
       # Web search for "madonna"
@@ -140,13 +90,13 @@ module RubyWidget
           @label.text = element.text
           layout.add_item @label
         when "image"
-          #@image = Plasma::Image.new self
           @image = Plasma::WebView.new()
           @image.setUrl(KDE::Url.new(element.text))
-
-   #       @image = Plasma::IconWidget.new self
-#          @image.url = element.text
           layout.add_item @image
+        when "video" # potrebujeme KDE 4.3!
+          @video = Plasma::VideoWidget.new()
+          @video.setUrl(KDE::Url.new(element.text))
+          layout.add_item @video
         end
       end
       #@delka =titles.length
