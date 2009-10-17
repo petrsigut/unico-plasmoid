@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>Config</class>
+ <widget class="QWidget" name="Config">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>313</width>
-    <height>176</height>
+    <width>443</width>
+    <height>221</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <widget class="QLabel" name="label">
-    <property name="geometry">
-    <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>291</width>
-      <height>31</height>
-    </rect>
-    </property>
-    <property name="text">
-      <string>Please choose the Locations 
-you want to see in ruHappa</string>
-    </property>
-  </widget>
-  <widget class="QCheckBox" name="kcfg_Mensa">
-    <property name="geometry">
-      <rect>
-        <x>10</x>
-        <y>50</y>
-        <width>87</width>
-        <height>23</height>
-      </rect>
-    </property>
-    <property name="text">
-      <string>Mensa</string>
-    </property>
-  </widget>
-</widget>
-<resources/>
-<connections/>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QRadioButton" name="kcfg_imageUrlRadio">
+     <property name="text">
+      <string>Image URL:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="KUrlRequester" name="kcfg_imageUrl"/>
+   </item>
+   <item>
+    <widget class="QRadioButton" name="kcfg_imageScriptRadio">
+     <property name="text">
+      <string>Script that prints image URL:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="KUrlRequester" name="kcfg_imageScript"/>
+   </item>
+
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KUrlRequester</class>
+   <extends>QFrame</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
 </ui>
