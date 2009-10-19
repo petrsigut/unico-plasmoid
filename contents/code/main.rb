@@ -1,4 +1,4 @@
-# <Copyright and license information goes here.>
+# GPLv3
 require 'plasma_applet'
 #require 'Qt4'
 require 'korundum4'
@@ -17,7 +17,7 @@ module RubyWidget
 #    slots 'load(QUrl)',
 #          'loadFinished(bool)',
 #          :paserxml
-#    slots :add_x
+    slots :show_html
 
     def initialize parent
       super parent
@@ -26,12 +26,13 @@ module RubyWidget
     def init
       #Qt.debug_level = Qt::DebugLevel::High
       self.has_configuration_interface = true
-      self.aspect_ratio_mode = Plasma::Square
+      self.aspect_ratio_mode = Plasma::IgnoreAspectRatio
       self.background_hints = Plasma::Applet.DefaultBackground
  
       @layout = Qt::GraphicsLinearLayout.new Qt::Vertical, self
 
       configChanged
+      reload_content
 
       #data = Plasma::ToolTipContent.new
       #data.mainText = "My Title"
@@ -43,7 +44,44 @@ module RubyWidget
 
      # resize 125, 125
     end
+    
+    #http://actsasblog.wordpress.com/2006/10/16/url-validation-in-rubyrails
+    def validate(url)
+      errors = false # tady by se chtelo asi naucit pracovat s podminkama    
+      begin
+        uri = URI.parse(url)
+        if uri.class != URI::HTTP
+          puts 'XXXOnly HTTP protocol addresses can be used'
+          errors = true
+        end
+        rescue URI::InvalidURIError
+          puts 'XXXThe format of the url is not valid.'
+          errors = true
+        end
+      return errors
+    end
+   
+    def validate_download(url)
+      errors = false
+      uri = URI.parse(url)
+      begin
+        case Net::HTTP.get_response(uri)
+          when Net::HTTPSuccess then errors = false
+          else errors = true
+        end
+      rescue
+        errors = true
+        puts "rescue jak cyp"
+      end
+      return errors
+    end
 
+    def reload_content
+      timer = Qt::Timer.new(parent)
+      connect(timer, SIGNAL('timeout()'), self, SLOT(:show_html))
+      timer.start(1000)
+      puts "reloading plasmoid"
+    end
 
     
     def configChanged
@@ -51,11 +89,14 @@ module RubyWidget
       configGroup = config.group('url')
       # pozor na to aby tam byl nil, ne "nil":)
       @url_to_show = configGroup.readEntry('imageUrl', 'nil')
-        
-      extension = @url_to_show.split('.').last
 
-       # puts @url_to_show
-        puts extension
+
+      # test if the url could be downloaded
+      errors = validate(@url_to_show)
+      errors = validate_download(@url_to_show)
+
+      unless errors
+        extension = @url_to_show.split('.').last
 
         case extension
         when "xml"
@@ -65,6 +106,17 @@ module RubyWidget
         else
           show_html
         end
+      else
+        show_configure_me
+      end
+
+    end
+
+    def show_configure_me
+      reset_layout
+      @label = Plasma::Label.new self
+      @label.text = "Url je divná, prosím nakonfiguruj mě znova"
+      @layout.add_item @label
     end
 
     def reset_layout
