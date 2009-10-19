@@ -10,6 +10,9 @@ require 'rexml/document'
 
 require 'logger'
 
+#
+require 'tempfile'
+
 module RubyWidget
   # PlasmaScripting::Applet - for GHNS
   class Main < PlasmaScripting::Applet
@@ -17,7 +20,7 @@ module RubyWidget
 #    slots 'load(QUrl)',
 #          'loadFinished(bool)',
 #          :paserxml
-    slots :show_html
+    slots :check_new_data
 
     def initialize parent
       super parent
@@ -31,6 +34,7 @@ module RubyWidget
  
       @layout = Qt::GraphicsLinearLayout.new Qt::Vertical, self
 
+      @tmp_data = ""
       configChanged
       reload_content
 
@@ -60,7 +64,7 @@ module RubyWidget
         end
       return errors
     end
-   
+  
     def validate_download(url)
       errors = false
       uri = URI.parse(url)
@@ -78,24 +82,13 @@ module RubyWidget
 
     def reload_content
       timer = Qt::Timer.new(parent)
-      connect(timer, SIGNAL('timeout()'), self, SLOT(:show_html))
+      connect(timer, SIGNAL('timeout()'), self, SLOT(:check_new_data))
       timer.start(1000)
       puts "reloading plasmoid"
     end
 
-    
-    def configChanged
-      config = self.config
-      configGroup = config.group('url')
-      # pozor na to aby tam byl nil, ne "nil":)
-      @url_to_show = configGroup.readEntry('imageUrl', 'nil')
-
-
-      # test if the url could be downloaded
-      errors = validate(@url_to_show)
-      errors = validate_download(@url_to_show)
-
-      unless errors
+    def decide_what_to_show(errors=false)
+     unless errors
         extension = @url_to_show.split('.').last
 
         case extension
@@ -110,6 +103,22 @@ module RubyWidget
         show_configure_me
       end
 
+    end
+
+    
+    def configChanged
+      config = self.config
+      configGroup = config.group('url')
+      # pozor na to aby tam byl nil, ne "nil":)
+      @url_to_show = configGroup.readEntry('imageUrl', 'nil')
+
+
+      # test if the url could be downloaded
+      errors = validate(@url_to_show)
+      errors = validate_download(@url_to_show)
+
+      decide_what_to_show(errors)
+      
     end
 
     def show_configure_me
@@ -131,20 +140,50 @@ module RubyWidget
 
     end
 
+    # should call validate_download first!
+    def check_new_data
+      # http://www.devdaily.com/blog/post/ruby/ruby-how-write-to-a-temporary-file
+      #
+      # we just cache the text - that means url to image, not the image itself
+      
+      
+      # get the data as a string
+      new_data = Net::HTTP.get_response(URI.parse(@url_to_show)).body
+
+      #puts "TENHLE SOUBOR"
+      #puts @tmp_file.path
+      #tmp_data = IO.read(@tmp_file.path)
+
+      # data we downloaded are newer
+      if new_data != @tmp_data
+        # write new data to cache tmp file
+        #open(@tmp_file.path, File::TRUNC) {}
+        #@tmp_file << new_data
+        #@tmp_file.flush
+        #puts "novy obsah do tmpfilu"
+        @tmp_data = new_data
+        puts "CACHE SE NEROVNA PREKRESLUJEME"
+        
+        @data_to_show = new_data
+        decide_what_to_show
+      end
+      
+      # we should delete tmp file after exiting plasmoid? Better than exiting
+      # - deleting from workspace, so we will have some content after restart
+      # and no connection
+
+      # http://labs.trolltech.com/blogs/2008/08/04/network-cache/
+      # would be better to use QT cache
+
+
+
+    end
 
     def show_xml
       reset_layout
 
-      # Web search for "madonna"
-      #url = 'http://localhost:3000/pcfilmtydne'
-      #url = 'http://api.search.yahoo.com/WebSearchService/V1/webSearch?appid=YahooDemo&query=madonna&results=2'
-        
-
-      # get the XML data as a string
-      xml_data = Net::HTTP.get_response(URI.parse(@url_to_show)).body
-
       # extract event information
-      doc = REXML::Document.new(xml_data)
+      doc = REXML::Document.new(@data_to_show)
       doc.elements.each("document/*") do |element|
         case element.name
         when "label"
@@ -173,9 +212,9 @@ module RubyWidget
     def show_html
 
       reset_layout
-
+      
       @web = Plasma::WebView.new()
-      @web.setUrl(KDE::Url.new(@url_to_show))
+      @web.setHtml(@data_to_show)
       @layout.add_item @web
       puts "X"
       puts @web
