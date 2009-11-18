@@ -4,21 +4,15 @@
       xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
   <kcfgfile/>
   <group name="url">
-      <entry name="imageUrlRadio" type="Bool">
-          <label>Select to use image URL</label>
-          <default>true</default>
-      </entry>
-      <entry name="imageUrl" type="Url">
-          <label>Image URL</label>
+      <entry name="contentUrl" type="Url">
+          <label>Content URL</label>
           <default></default>
-      </entry>
-      <entry name="imageScriptRadio" type="Bool">
-          <label>Select to use image script</label>
-          <default>false</default>
-      </entry>
-      <entry name="imageScript" type="Url">
-          <label>Image Script</label>
-          <default></default>
-      </entry>
+        </entry>
+        <entry name="interval" type="Int">
+          <label>Content update interval (minutes)</label>
+          <default>5</default>
+          <min>1</min>
+        </entry>
+
  </group>
 </kcfg>

@@ -11,26 +11,50 @@
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QRadioButton" name="kcfg_imageUrlRadio">
+
+ <item>
+  <widget class="QLabel" name="intervalLabel">
+   <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>Image URL:</string>
+      <string>Content URL:</string>
+     </property>
+     <property name="buddy">
+      <cstring>kcfg_contentUrl</cstring>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="KUrlRequester" name="kcfg_imageUrl"/>
-   </item>
-   <item>
-    <widget class="QRadioButton" name="kcfg_imageScriptRadio">
+  </item>
+
+    
+    
+    <item>
+    <widget class="KUrlRequester" name="kcfg_contentUrl"/>
+  </item>
+
+  <item>
+  <widget class="QLabel" name="intervalLabel">
+   <property name="minimumSize">
+      <size>
+       <width>150</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="text">
-      <string>Script that prints image URL:</string>
+      <string>Content update interval: (minutes)</string>
+     </property>
+     <property name="buddy">
+      <cstring>kcfg_interval</cstring>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="KUrlRequester" name="kcfg_imageScript"/>
-   </item>
+  </item>
+  <item>
+    <widget class="QSpinBox" name="kcfg_interval"/>
+  </item>
+
 
   </layout>
  </widget>

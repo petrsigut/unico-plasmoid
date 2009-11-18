@@ -83,13 +83,13 @@ module RubyWidget
     def reload_content
       timer = Qt::Timer.new(parent)
       connect(timer, SIGNAL('timeout()'), self, SLOT(:check_new_data))
-      timer.start(1000)
-      puts "reloading plasmoid"
+      timer.start(@interval * 1000 * 60) # in minutes
+      puts "setting timer"
     end
 
     def decide_what_to_show(errors=false)
      unless errors
-        extension = @url_to_show.split('.').last
+        extension = @url_to_show.split('.').last.split('?').first
 
         case extension
         when "xml"
@@ -107,16 +107,19 @@ module RubyWidget
 
     
     def configChanged
+      # http://techbase.kde.org/Development/Tutorials/Using_KConfig_XT
       config = self.config
       configGroup = config.group('url')
       # pozor na to aby tam byl nil, ne "nil":)
-      @url_to_show = configGroup.readEntry('imageUrl', 'nil')
+      @url_to_show = configGroup.readEntry('contentUrl', 'nil')
+      @interval = configGroup.readEntry('interval', 1)
 
 
       # test if the url could be downloaded
       errors = validate(@url_to_show)
       errors = validate_download(@url_to_show)
 
+      check_new_data
       decide_what_to_show(errors)
       
     end
@@ -124,7 +127,7 @@ module RubyWidget
     def show_configure_me
       reset_layout
       @label = Plasma::Label.new self
-      @label.text = "Url je divná, prosím nakonfiguruj mě znova"
+      @label.text = "URL is strange, please reconfigure"
       @layout.add_item @label
     end
 
@@ -146,34 +149,42 @@ module RubyWidget
       #
       # we just cache the text - that means url to image, not the image itself
       
+      # 
+      errors = validate_download(@url_to_show)
       
-      # get the data as a string
-      new_data = Net::HTTP.get_response(URI.parse(@url_to_show)).body
+      unless errors
+        # get the data as a string
+        new_data = Net::HTTP.get_response(URI.parse(@url_to_show)).body
+        puts "Checking new data"+Time.now.to_s
 
-      #puts "TENHLE SOUBOR"
-      #puts @tmp_file.path
-      #tmp_data = IO.read(@tmp_file.path)
+        #puts "TENHLE SOUBOR"
+        #puts @tmp_file.path
+        #tmp_data = IO.read(@tmp_file.path)
 
-      # data we downloaded are newer
-      if new_data != @tmp_data
-        # write new data to cache tmp file
-        #open(@tmp_file.path, File::TRUNC) {}
-        #@tmp_file << new_data
-        #@tmp_file.flush
-        #puts "novy obsah do tmpfilu"
-        @tmp_data = new_data
-        puts "CACHE SE NEROVNA PREKRESLUJEME"
+        # data we downloaded are newer
+        if new_data != @tmp_data
+          # write new data to cache tmp file
+          #open(@tmp_file.path, File::TRUNC) {}
+          #@tmp_file << new_data
+          #@tmp_file.flush
+          #puts "novy obsah do tmpfilu"
+          @tmp_data = new_data
+          puts "cache is different, rendering new data"
+          
+          @data_to_show = new_data
+          decide_what_to_show
+        else
+          puts "no really new data"
+        end
+
         
-        @data_to_show = new_data
-        decide_what_to_show
-      end
-      
-      # we should delete tmp file after exiting plasmoid? Better than exiting
-      # - deleting from workspace, so we will have some content after restart
-      # and no connection
+        # we should delete tmp file after exiting plasmoid? Better than exiting
+        # - deleting from workspace, so we will have some content after restart
+        # and no connection
 
-      # http://labs.trolltech.com/blogs/2008/08/04/network-cache/
-      # would be better to use QT cache
+        # http://labs.trolltech.com/blogs/2008/08/04/network-cache/
+        # would be better to use QT cache
+      end
 
 
 
@@ -181,6 +192,7 @@ module RubyWidget
 
     def show_xml
       reset_layout
+      puts "Showing XML"
 
       # extract event information
       doc = REXML::Document.new(@data_to_show)
@@ -212,6 +224,8 @@ module RubyWidget
     def show_html
 
       reset_layout
+
+      puts "Showing HTML"
       
       @web = Plasma::WebView.new()
       @web.setHtml(@data_to_show)
