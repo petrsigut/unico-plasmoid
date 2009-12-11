@@ -17,33 +17,28 @@
 
 require 'plasma_applet'
 #require 'Qt4'
-require 'korundum4'
-require "qtwebkit"
+#require 'korundum4'
+#require "qtwebkit"
+#require 'tempfile'
 
-# pro stahnuti a parsovani xmlka
+# need to download
 require 'net/http'
+
+# need to parse xml
 require 'rexml/document'
 
 require 'logger'
 
-#
-require 'tempfile'
 
 module UnicoPlasmoid
-  # PlasmaScripting::Applet - for GHNS
   class Main < PlasmaScripting::Applet
-# The both slots used by our applet.
-#    slots 'load(QUrl)',
-#          'loadFinished(bool)',
-#          :paserxml
-    slots :check_new_data
 
     def initialize parent
       super parent
     end
  
     def init
-      #Qt.debug_level = Qt::DebugLevel::High
+      Qt.debug_level = Qt::DebugLevel::High
       self.has_configuration_interface = true
       self.aspect_ratio_mode = Plasma::IgnoreAspectRatio
       self.background_hints = Plasma::Applet.DefaultBackground
@@ -51,8 +46,11 @@ module UnicoPlasmoid
       @layout = Qt::GraphicsLinearLayout.new Qt::Vertical, self
 
       @tmp_data = ""
+      
+      init_timer
       configChanged
-      reload_content
+      
+      #reload_content
 
       #data = Plasma::ToolTipContent.new
       #data.mainText = "My Title"
@@ -71,11 +69,11 @@ module UnicoPlasmoid
       begin
         uri = URI.parse(url)
         if uri.class != URI::HTTP
-          puts 'XXXOnly HTTP protocol addresses can be used'
+          puts 'Only HTTP protocol addresses can be used'
           errors = true
         end
         rescue URI::InvalidURIError
-          puts 'XXXThe format of the url is not valid.'
+          puts 'The format of the url is not valid.'
           errors = true
         end
       return errors
@@ -91,19 +89,20 @@ module UnicoPlasmoid
         end
       rescue
         errors = true
-        puts "rescue jak cyp"
+        puts "http download error"
       end
       return errors
     end
 
-    def reload_content
-      timer = Qt::Timer.new(parent)
-      connect(timer, SIGNAL('timeout()'), self, SLOT(:check_new_data))
-      timer.start(@interval * 1000 * 60) # in minutes
+    def init_timer
+      @timer = Qt::Timer.new(parent)
+      connect(@timer, SIGNAL('timeout()'), self, SLOT(:check_new_data))
+#      @timer.start(@interval * 1000 * 60) # in minutes
       puts "setting timer"
     end
 
     def decide_what_to_show(errors=false)
+     reset_layout
      unless errors
         extension = @url_to_show.split('.').last.split('?').first
 
@@ -134,17 +133,19 @@ module UnicoPlasmoid
       # test if the url could be downloaded
       errors = validate(@url_to_show)
       errors = validate_download(@url_to_show)
+      
+      @timer.timeout
+      @timer.start(@interval * 1000 * 60) # in minutes
 
-      check_new_data
-      decide_what_to_show(errors)
+      #check_new_data
+      #decide_what_to_show(errors)
       
     end
 
     def show_configure_me
-      reset_layout
-      @label = Plasma::Label.new self
-      @label.text = "URL is strange, please reconfigure"
-      @layout.add_item @label
+      label = Plasma::Label.new self
+      label.text = "URL is strange, please reconfigure"
+      @layout.add_item label
     end
 
     def reset_layout
@@ -188,26 +189,19 @@ module UnicoPlasmoid
           puts "cache is different, rendering new data"
           
           @data_to_show = new_data
-          decide_what_to_show
         else
           puts "no really new data"
         end
-
-        
-        # we should delete tmp file after exiting plasmoid? Better than exiting
-        # - deleting from workspace, so we will have some content after restart
-        # and no connection
-
         # http://labs.trolltech.com/blogs/2008/08/04/network-cache/
         # would be better to use QT cache
       end
+      decide_what_to_show(errors)
 
 
 
     end
 
     def show_xml
-      reset_layout
       puts "Showing XML"
 
       # extract event information
@@ -240,7 +234,6 @@ module UnicoPlasmoid
 
     def show_html
 
-      reset_layout
 
       puts "Showing HTML"
       
