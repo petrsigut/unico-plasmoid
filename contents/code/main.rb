@@ -65,7 +65,7 @@ module UnicoPlasmoid
     
     #http://actsasblog.wordpress.com/2006/10/16/url-validation-in-rubyrails
     def validate(url)
-      errors = false # tady by se chtelo asi naucit pracovat s podminkama    
+      errors = false # so far no errors...
       begin
         uri = URI.parse(url)
         if uri.class != URI::HTTP
@@ -101,6 +101,7 @@ module UnicoPlasmoid
       puts "setting timer"
     end
 
+    # depending on extensions in url (.html, .xml)
     def decide_what_to_show(errors=false)
      reset_layout
      unless errors
@@ -120,7 +121,8 @@ module UnicoPlasmoid
 
     end
 
-    
+    # automagicly called when users changed something in configuration - we
+    # we use new url and interval... 
     def configChanged
       # http://techbase.kde.org/Development/Tutorials/Using_KConfig_XT
       config = self.config
@@ -139,7 +141,6 @@ module UnicoPlasmoid
 
       #check_new_data
       #decide_what_to_show(errors)
-      
     end
 
     def show_configure_me
@@ -148,16 +149,17 @@ module UnicoPlasmoid
       @layout.add_item label
     end
 
+    # remove all widgets - for XML we need lots of widgets for HTML only
+    # one
     def reset_layout
-      puts "ZACINAM SMYCKU"
+      #puts "beging removing widgets"
       while ((@child = @layout.itemAt(0)) != nil)
 
         @layout.removeItem(@child)
         puts @child
         @child.dispose
       end
-      puts "KONCIm SMYCKU"
-
+      #puts "end removing widgets"
     end
 
     # should call validate_download first!
@@ -202,7 +204,7 @@ module UnicoPlasmoid
     end
 
     def show_xml
-      puts "Showing XML"
+      #puts "Showing XML"
 
       # extract event information
       doc = REXML::Document.new(@data_to_show)
@@ -212,14 +214,12 @@ module UnicoPlasmoid
           @label = Plasma::Label.new self
           @label.text = element.text
           @layout.add_item @label
-          puts "X"
-          puts @label
+          #puts @label
         when "image"
           @image = Plasma::WebView.new()
           @image.setUrl(KDE::Url.new(element.text))
           @layout.add_item @image
-          puts "X"
-          puts @image
+          #puts @image
         end
         #when "video" # potrebujeme KDE 4.3!
         #  @video = Plasma::VideoWidget.new()
@@ -233,16 +233,13 @@ module UnicoPlasmoid
     end
 
     def show_html
-
-
-      puts "Showing HTML"
+      #puts "Showing HTML"
       
       @web = Plasma::WebView.new()
       @web.setHtml(@data_to_show)
       @layout.add_item @web
-      puts "X"
-      puts @web
-#      self.layout = @layout
+      #puts @web
+      #self.layout = @layout
        
     end
 
