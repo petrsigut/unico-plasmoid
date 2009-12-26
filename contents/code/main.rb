@@ -176,7 +176,6 @@ module UnicoPlasmoid
         new_data = Net::HTTP.get_response(URI.parse(@url_to_show)).body
         puts "Checking new data"+Time.now.to_s
 
-        #puts "TENHLE SOUBOR"
         #puts @tmp_file.path
         #tmp_data = IO.read(@tmp_file.path)
 

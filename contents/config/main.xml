@@ -10,7 +10,7 @@
         </entry>
         <entry name="interval" type="Int">
           <label>Content update interval (minutes)</label>
-          <default>5</default>
+          <default>15</default>
           <min>1</min>
         </entry>
 
